@@ -1,0 +1,17 @@
+{
+  "name": "shree-shivay-namastubhyam",
+  "version": "1.0.0",
+  "description": "Shree Shivay Namastubhyam devotional website",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [
+    "shiv",
+    "mahadev",
+    "devotional",
+    "nodejs"
+  ],
+  "author": "",
+  "license": "ISC"
+}
