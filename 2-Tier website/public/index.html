@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DevOps Task Manager</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 650px;
+      margin: 40px auto;
+      padding: 0 16px;
+      background: #f4f6f8;
+      color: #222;
+    }
+    h1 { text-align: center; }
+    form { display: flex; gap: 8px; }
+    input {
+      flex: 1;
+      min-width: 0;
+      padding: 12px;
+    }
+    button { padding: 10px 14px; cursor: pointer; }
+    li {
+      background: white;
+      margin: 10px 0;
+      padding: 12px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .title { flex: 1; overflow-wrap: anywhere; }
+    .done { text-decoration: line-through; color: gray; }
+    #message { color: #b00020; }
+  </style>
+</head>
+<body>
+  <h1>DevOps Task Manager</h1>
+
+  <form id="task-form">
+    <input id="task-title" placeholder="Enter a task..." required>
+    <button type="submit">Add Task</button>
+  </form>
+
+  <p id="message" role="status"></p>
+  <ul id="tasks"></ul>
+
+  <script>
+    const form = document.getElementById("task-form");
+    const input = document.getElementById("task-title");
+    const list = document.getElementById("tasks");
+    const message = document.getElementById("message");
+
+    async function request(url, options = {}) {
+      const response = await fetch(url, {
+        ...options,
+        headers: {
+          "Content-Type": "application/json",
+          ...options.headers
+        }
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Request failed");
+      }
+
+      return data;
+    }
+
+    function showMessage(text = "") {
+      message.textContent = text;
+    }
+
+    function renderTask(task) {
+      const li = document.createElement("li");
+
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.checked = Boolean(task.completed);
+      checkbox.setAttribute("aria-label", "Mark task complete");
+
+      const title = document.createElement("span");
+      title.className = "title";
+      title.textContent = task.title;
+      if (task.completed) title.classList.add("done");
+
+      checkbox.addEventListener("change", async () => {
+        try {
+          await request(`/api/tasks/${task.id}`, {
+            method: "PATCH",
+            body: JSON.stringify({ completed: checkbox.checked })
+          });
+          await loadTasks();
+        } catch (error) {
+          showMessage(error.message);
+          checkbox.checked = !checkbox.checked;
+        }
+      });
+
+      const remove = document.createElement("button");
+      remove.textContent = "Delete";
+
+      remove.addEventListener("click", async () => {
+        try {
+          await request(`/api/tasks/${task.id}`, {
+            method: "DELETE"
+          });
+          await loadTasks();
+        } catch (error) {
+          showMessage(error.message);
+        }
+      });
+
+      li.append(checkbox, title, remove);
+      list.appendChild(li);
+    }
+
+    async function loadTasks() {
+      try {
+        const tasks = await request("/api/tasks");
+        list.replaceChildren();
+        tasks.forEach(renderTask);
+        showMessage();
+      } catch (error) {
+        showMessage(error.message);
+      }
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const title = input.value.trim();
+      if (!title) return;
+
+      try {
+        await request("/api/tasks", {
+          method: "POST",
+          body: JSON.stringify({ title })
+        });
+        input.value = "";
+        await loadTasks();
+      } catch (error) {
+        showMessage(error.message);
+      }
+    });
+
+    loadTasks();
+  </script>
+</body>
+</html>
