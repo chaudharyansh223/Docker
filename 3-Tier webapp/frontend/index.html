@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Secure Login Portal</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="login-container">
+    <section class="login-card">
+      <div class="logo">S</div>
+
+      <h1>Welcome Back</h1>
+      <p class="subtitle">Sign in to access your dashboard</p>
+
+      <form id="loginForm">
+        <label for="username">Username</label>
+        <input
+          id="username"
+          name="username"
+          type="text"
+          placeholder="Enter your username"
+          autocomplete="username"
+          required
+        >
+
+        <label for="password">Password</label>
+        <input
+          id="password"
+          name="password"
+          type="password"
+          placeholder="Enter your password"
+          autocomplete="current-password"
+          required
+        >
+
+        <button type="submit" id="loginButton">Sign In</button>
+        <p id="message" role="status"></p>
+      </form>
+
+      <footer>Secure Login Portal · Powered by Node.js & MySQL</footer>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
