@@ -1,0 +1,63 @@
+services:
+  nginx:
+    build:
+      context: .
+      dockerfile: ./nginx/Dockerfile
+    container_name: nginx
+    ports:
+     - "80:80"
+    restart: always
+    networks:
+      app-net:
+    depends_on:
+      - app
+
+  app:
+    build:
+     context: ./
+     dockerfile: Dockerfile
+    ports:
+     - "3000:3000"
+    container_name: node.js
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_NAME: ${DB_NAME}
+      DB_PORT: ${DB_PORT}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_USER: ${DB_USER}
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      app-net:
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
+  database:
+    image: mysql:8.4
+    ports:
+     - "3306:3306"
+    container_name: mysql
+    networks:
+      app-net:
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+    restart: always
+    volumes:
+     - 3-tier:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p1628"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+networks:
+  app-net:
+volumes:
+  3-tier:
