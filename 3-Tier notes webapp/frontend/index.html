@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Notes - Mobile Web App</title>
+  <!-- Google Fonts: Inter & Caveat for handwritten/modern feel -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Mobile Container Wrapper -->
+  <div class="app-container">
+
+    <!-- Top Header -->
+    <header class="app-header">
+      <div class="header-top">
+        <div class="brand">
+          <div class="brand-icon">📝</div>
+          <div>
+            <h1 class="brand-title">Notes</h1>
+            <p class="brand-subtitle" id="notesCounter">Loading notes...</p>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button id="themeToggleBtn" class="icon-btn" title="Toggle Theme" aria-label="Toggle Theme">
+            🌙
+          </button>
+          <button id="refreshBtn" class="icon-btn" title="Sync / Refresh" aria-label="Sync notes">
+            🔄
+          </button>
+        </div>
+      </div>
+
+      <!-- Search Bar -->
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input
+          type="text"
+          id="searchInput"
+          placeholder="Search notes, titles, or words..."
+          autocomplete="off"
+        />
+        <button id="clearSearchBtn" class="clear-btn hidden" title="Clear search">&times;</button>
+      </div>
+
+      <!-- Color Filter Pills -->
+      <div class="filter-bar" id="colorFilterBar">
+        <button class="filter-chip active" data-color="all">All</button>
+        <button class="filter-chip" data-color="#fef08a" style="--chip-color: #fef08a;">Yellow</button>
+        <button class="filter-chip" data-color="#bae6fd" style="--chip-color: #bae6fd;">Blue</button>
+        <button class="filter-chip" data-color="#bbf7d0" style="--chip-color: #bbf7d0;">Green</button>
+        <button class="filter-chip" data-color="#fed7aa" style="--chip-color: #fed7aa;">Peach</button>
+        <button class="filter-chip" data-color="#e9d5ff" style="--chip-color: #e9d5ff;">Purple</button>
+      </div>
+    </header>
+
+    <!-- Main Notes Content Feed -->
+    <main class="notes-main">
+      <!-- Connection Status Banner -->
+      <div id="statusBanner" class="status-banner hidden"></div>
+
+      <!-- Pinned Notes Section -->
+      <section id="pinnedSection" class="notes-section hidden">
+        <h2 class="section-title">📌 PINNED</h2>
+        <div class="notes-grid" id="pinnedGrid"></div>
+      </section>
+
+      <!-- Other Notes Section -->
+      <section id="allSection" class="notes-section">
+        <h2 class="section-title" id="allSectionTitle">ALL NOTES</h2>
+        <div class="notes-grid" id="notesGrid"></div>
+      </section>
+
+      <!-- Empty State View -->
+      <div id="emptyState" class="empty-state hidden">
+        <div class="empty-icon">📒</div>
+        <h3>No notes found</h3>
+        <p>Tap the yellow <strong>+</strong> button below to write your first note!</p>
+      </div>
+    </main>
+
+    <!-- Floating Action Button (FAB) for Creating New Note -->
+    <button id="fabNewNote" class="fab-btn" title="Create New Note" aria-label="Create New Note">
+      <span class="fab-icon">+</span>
+      <span class="fab-text">New Note</span>
+    </button>
+
+    <!-- Full Note Editor Modal (Mobile Drawer / Screen) -->
+    <div id="noteModal" class="modal-overlay hidden" role="dialog" aria-modal="true">
+      <div class="modal-card" id="modalCard">
+
+        <!-- Modal Top Bar -->
+        <div class="modal-header">
+          <button id="closeModalBtn" class="modal-action-btn cancel-btn" title="Back / Close">
+            ← Back
+          </button>
+          <div class="modal-header-center">
+            <span id="modalHeaderTitle" class="modal-header-title">Edit Note</span>
+            <span id="saveStatusIndicator" class="save-status">All changes saved</span>
+          </div>
+          <button id="saveNoteBtn" class="modal-action-btn save-btn" title="Save Note to Database">
+            💾 Save
+          </button>
+        </div>
+
+        <!-- Note Color & Options Toolbar -->
+        <div class="modal-toolbar">
+          <div class="color-picker-group">
+            <span class="toolbar-label">Color:</span>
+            <div class="color-options" id="colorPicker">
+              <button type="button" class="color-dot selected" data-color="#ffffff" style="background:#ffffff; border:1px solid #d1d5db;" title="White"></button>
+              <button type="button" class="color-dot" data-color="#fef08a" style="background:#fef08a;" title="Warm Yellow"></button>
+              <button type="button" class="color-dot" data-color="#bae6fd" style="background:#bae6fd;" title="Sky Blue"></button>
+              <button type="button" class="color-dot" data-color="#bbf7d0" style="background:#bbf7d0;" title="Mint Green"></button>
+              <button type="button" class="color-dot" data-color="#fed7aa" style="background:#fed7aa;" title="Warm Peach"></button>
+              <button type="button" class="color-dot" data-color="#e9d5ff" style="background:#e9d5ff;" title="Soft Purple"></button>
+            </div>
+          </div>
+
+          <!-- Pin Checkbox -->
+          <label class="pin-toggle-label">
+            <input type="checkbox" id="notePinnedCheckbox" />
+            <span class="pin-toggle-custom">📌 Pin to top</span>
+          </label>
+        </div>
+
+        <!-- Note Input Fields -->
+        <div class="modal-body">
+          <input
+            type="text"
+            id="noteTitleInput"
+            class="note-title-input"
+            placeholder="Title"
+            maxlength="250"
+            autocomplete="off"
+          />
+
+          <div class="modal-meta-info">
+            <span id="noteTimestampText">Just now</span>
+            <span id="noteCharCount">0 characters</span>
+          </div>
+
+          <textarea
+            id="noteContentInput"
+            class="note-content-input"
+            placeholder="Write your note here... (supports multiple lines, ideas, checklists)"
+          ></textarea>
+        </div>
+
+        <!-- Modal Bottom Actions -->
+        <div class="modal-footer">
+          <button id="deleteInModalBtn" class="delete-btn-footer hidden" title="Delete this note">
+            🗑️ Delete Note
+          </button>
+          <div class="modal-footer-right">
+            <button id="cancelModalBtn" class="btn btn-secondary">Cancel</button>
+            <button id="saveModalBottomBtn" class="btn btn-primary">💾 Save Note</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Confirm Delete Dialog -->
+    <div id="confirmDialog" class="confirm-overlay hidden">
+      <div class="confirm-box">
+        <h3>Delete Note?</h3>
+        <p>This note will be permanently removed from your MySQL database.</p>
+        <div class="confirm-actions">
+          <button id="cancelDeleteBtn" class="btn btn-secondary">Cancel</button>
+          <button id="confirmDeleteBtn" class="btn btn-danger">Delete</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification Banner -->
+    <div id="toast" class="toast hidden"></div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
